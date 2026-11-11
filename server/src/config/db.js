@@ -7,6 +7,8 @@ function isSrvDnsError(error) {
 }
 
 export async function connectDB() {
+  if (mongoose.connection.readyState === 1) return; // already connected
+
   mongoose.set('strictQuery', true);
   const options = { serverSelectionTimeoutMS: 5000 };
 

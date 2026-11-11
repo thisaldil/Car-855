@@ -17,8 +17,19 @@ import { favorites, tax, calculator, notifications, uploads, admin } from './rou
 
 const app = express();
 app.set('trust proxy', 1);
-app.use(helmet());
-app.use(cors({ origin: env.clientUrl.split(','), credentials: true }));
+const allowedOrigins = [
+  ...(env.clientUrl || '').split(','),
+  'https://car-855.vercel.app',
+  'http://localhost:5173',
+]
+  .map((o) => o.trim().replace(/\/$/, ''))
+  .filter(Boolean);
+
+const corsOptions = { origin: allowedOrigins, credentials: true };
+
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // use '/{*splat}' if you're on Express 5
 if (!isProd) app.use(morgan('dev'));
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
