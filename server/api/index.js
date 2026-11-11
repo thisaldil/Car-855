@@ -1,6 +1,6 @@
-import app from '../app.js';
-import { assertEnv } from '../config/env.js';
-import { connectDB } from '../config/db.js';
+import app from '../src/app.js';
+import { assertEnv } from '../src/config/env.js';
+import { connectDB } from '../src/config/db.js';
 
 export default async function handler(req, res) {
   // let CORS preflight through without touching the DB
