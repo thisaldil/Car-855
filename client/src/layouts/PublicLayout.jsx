@@ -6,6 +6,8 @@ import { useAuth } from '../contexts/AuthContext.jsx';
 import { useSettings } from '../hooks/useSettings.js';
 
 const links = [['/vehicles', 'Vehicles'], ['/auctions', 'Japan Auctions'], ['/import', 'Import a Car'], ['/calculators/tax', 'Calculators'], ['/services', 'Services'], ['/about', 'About'], ['/contact', 'Contact']];
+const contactNumbers = ['077 747 7626', '071 562 6855', '071 762 6855'];
+const instagram = 'https://www.instagram.com/cars_at_855?exln=MWZkNmV6cWg0YzQ4MA==';
 
 export default function PublicLayout() {
   const [open, setOpen] = useState(false);
@@ -36,17 +38,17 @@ export default function PublicLayout() {
       {s.whatsapp && <a href={`https://wa.me/${s.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent('Hello Cars@855, I would like some information.')}`} target="_blank" rel="noreferrer" aria-label="WhatsApp" className="fixed bottom-5 right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-green-500 text-white shadow-xl"><MessageCircle /></a>}
       <footer className="bg-brand text-gray-300">
         <div className="container-x grid gap-8 py-12 md:grid-cols-4">
-          <div><img src={logo} alt="Cars@855" className="h-14" /><p className="mt-3 text-sm">Quality vehicles from Japan and Sri Lanka, with transparent import support.</p></div>
+          <div><img src={logo} alt="Cars@855" className="h-14" /><p className="mt-3 text-sm">Your Dream Vehicle, Our Expertise.</p><p className="mt-1 text-sm">Trusted Vehicle Imports Since 1985.</p><p className="mt-1 text-sm">Quality · Trust · Experience</p><p className="mt-1 text-sm">No. 855, Negombo</p></div>
           <div><h4 className="mb-3 font-bold text-white">Explore</h4>{[['/vehicles', 'Vehicle Stock'], ['/auctions', 'Auction Vehicles'], ['/calculators/tax', 'Calculators'], ['/faq', 'FAQ']].map(([t, l]) => <Link key={t} to={t} className="block py-1 text-sm hover:text-gold">{l}</Link>)}</div>
           <div><h4 className="mb-3 font-bold text-white">Company</h4>{[['/about', 'About Us'], ['/import-process', 'Import Process'], ['/financing', 'Financing'], ['/inspection', 'Vehicle Inspection'], ['/privacy', 'Privacy Policy'], ['/terms', 'Terms & Conditions']].map(([t, l]) => <Link key={t} to={t} className="block py-1 text-sm hover:text-gold">{l}</Link>)}</div>
-          <div><h4 className="mb-3 font-bold text-white">Contact</h4>
-            {s.phone && <a href={`tel:${s.phone}`} className="flex items-center gap-2 py-1 text-sm hover:text-gold"><Phone size={14} />{s.phone}</a>}
+          <div><h4 className="mb-3 font-bold text-white">Contact Us Today</h4>
+            {contactNumbers.map((number) => <a key={number} href={`tel:${number.replace(/\s/g, '')}`} className="flex items-center gap-2 py-1 text-sm hover:text-gold"><Phone size={14} />{number}</a>)}
             {s.email && <a href={`mailto:${s.email}`} className="flex items-center gap-2 py-1 text-sm hover:text-gold"><Mail size={14} />{s.email}</a>}
-            {s.address && <p className="py-1 text-sm">{s.address}</p>}
-            {!s.phone && !s.email && !s.address && <p className="text-sm text-gray-500">Contact details are managed in the admin dashboard.</p>}
+            <p className="py-1 text-sm">No. 855, Negombo</p>
+            <a href={instagram} target="_blank" rel="noreferrer" className="block py-1 text-sm hover:text-gold">Instagram</a>
           </div>
         </div>
-        <div className="border-t border-white/10 py-4 text-center text-xs text-gray-500">© {new Date().getFullYear()} Cars@855. All rights reserved.</div>
+        <div className="border-t border-white/10 py-4 text-center text-xs text-gray-500">© {new Date().getFullYear()} Cars@855. All rights reserved. · Let&apos;s Import Your Dream Car</div>
       </footer>
     </div>
   );
