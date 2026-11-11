@@ -50,7 +50,7 @@ export default function Home() {
         </div>}
       </div>
     </section>
-    <section className="container-x py-14"><div className="mb-6 flex items-end justify-between"><h2 className="h-section">Featured Vehicles</h2><Link to="/vehicles" className="text-sm font-semibold text-gold">View all →</Link></div>{grid(featured)}</section>
+    <section className="container-x py-14"><div className="mb-6 flex flex-wrap items-end justify-between gap-2"><h2 className="h-section">Featured Vehicles</h2><Link to="/vehicles" className="text-sm font-semibold text-gold">View all →</Link></div>{grid(featured)}</section>
     <section className="bg-gray-50"><div className="container-x py-14"><h2 className="h-section mb-6">Available Stock</h2>{grid(latest)}</div></section>
     <section className="container-x py-14">
       <div className="text-center"><h2 className="h-section">Import from Japan, Step by Step</h2><p className="mx-auto mt-2 max-w-xl text-gray-500">You don't need to understand auctions. We handle it end to end.</p></div>

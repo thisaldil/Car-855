@@ -79,6 +79,8 @@ uploads.post('/vehicle-images', can('vehicles'), imageUpload.array('images', 10)
   ok(res, out.map((o) => ({ url: o.url, publicId: o.publicId })), {}, 201);
 }));
 uploads.post('/vehicle-documents/:vehicleId', can('vehicles'), docUpload.single('file'), asyncHandler(async (req, res) => {
+  console.log('BODY:', req.body);
+  console.log('FILE:', req.file && { name: req.file.originalname, mime: req.file.mimetype });
   if (!req.file) throw new AppError('No file uploaded', 422);
   const o = await uploadBuffer(req.file, { folder: 'vehicle-docs', privateFile: true });
   ok(res, await VehicleDocument.create({ vehicle: req.params.vehicleId, documentType: req.body.documentType || 'other', publicId: o.publicId, uploadedBy: req.user._id }), {}, 201);
@@ -88,9 +90,24 @@ uploads.post('/import-documents/:id', docUpload.single('file'), asyncHandler(asy
   const staff = ['admin', 'staff'].includes(req.user.role);
   if (!d || (!staff && String(d.customer) !== String(req.user._id))) throw new AppError('Import request not found', 404);
   if (!req.file) throw new AppError('No file uploaded', 422);
-  const o = await uploadBuffer(req.file, { folder: 'import-docs', privateFile: true });
-  d.documents.push({ name: req.file.originalname.slice(0, 120), type: req.body.type || 'other', publicId: o.publicId, uploadedBy: req.user._id });
-  await d.save(); ok(res, { name: req.file.originalname }, {}, 201);
+
+  let o;
+  try {
+    o = await uploadBuffer(req.file, { folder: 'import-docs', privateFile: true });
+  } catch (e) {
+    console.error('CLOUDINARY ERROR:', e);
+    throw new AppError(`Storage error: ${e.message}`, 502);
+  }
+
+  try {
+    d.documents.push({ name: req.file.originalname.slice(0, 120), type: req.body.type || 'other', publicId: o.publicId, uploadedBy: req.user._id });
+    await d.save();
+  } catch (e) {
+    console.error('SAVE ERROR:', e.message);
+    await destroy(o.publicId, { type: 'private' }); // don't leave an orphan in Cloudinary
+    throw e;
+  }
+  ok(res, { name: req.file.originalname }, {}, 201);
 }));
 // Short-lived signed link; only the owning customer or staff
 uploads.get('/import-documents/:id/:docId', asyncHandler(async (req, res) => {

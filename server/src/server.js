@@ -10,7 +10,9 @@ async function startServer() {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`Unable to start the API: ${message}`);
-    console.error('Check MONGODB_URI in server/.env and ensure the MongoDB instance is reachable from this machine.');
+    console.error(
+      'Check MONGODB_URI, MONGODB_DNS_SERVERS, and Atlas network access in server/.env.',
+    );
     process.exit(1);
   }
 }

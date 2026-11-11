@@ -17,7 +17,7 @@ npm run install:all
 cp server/.env.example server/.env     # fill in values
 cp client/.env.example client/.env
 ```
-**server/.env** — `MONGODB_URI` (e.g. `mongodb://127.0.0.1:27017/cars855` or an Atlas URI), `JWT_SECRET` (long random string), `CLIENT_URL`, Cloudinary keys (needed for image/document upload), SMTP settings (without SMTP, emails are logged to the console), and `ADMIN_EMAIL` / `ADMIN_PASSWORD` for the seed.
+**server/.env** — `MONGODB_URI` (e.g. `mongodb://127.0.0.1:27017/cars855` or an Atlas URI), `MONGODB_DNS_SERVERS` (optional comma-separated fallback DNS servers for Atlas SRV URIs; defaults to `1.1.1.1,8.8.8.8`), `JWT_SECRET` (long random string), `CLIENT_URL`, Cloudinary keys (needed for image/document upload), SMTP settings (without SMTP, emails are logged to the console), and `ADMIN_EMAIL` / `ADMIN_PASSWORD` for the seed.
 
 If the server reports `ECONNREFUSED 127.0.0.1:27017`, MongoDB is not running at the URI configured in `server/.env`. Start the local MongoDB service or replace `MONGODB_URI` with a reachable MongoDB Atlas connection string before running the API.
 

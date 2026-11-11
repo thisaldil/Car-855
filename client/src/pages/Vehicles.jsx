@@ -24,7 +24,7 @@ export default function Vehicles() {
         <div><h1 className="text-3xl font-extrabold">Vehicle Stock</h1><p className="text-sm text-gray-500">{q.data?.meta ? `${q.data.meta.total} vehicles` : ' '}</p></div>
         <div className="flex gap-2">
           <button className="btn-ghost lg:hidden" onClick={() => setShow(!show)}><SlidersHorizontal size={16} />Filters</button>
-          <select className="input w-auto" value={params.sort || 'newest'} onChange={(e) => set('sort', e.target.value)}>
+          <select className="input min-w-0 w-full sm:w-auto" value={params.sort || 'newest'} onChange={(e) => set('sort', e.target.value)}>
             <option value="newest">Newest listings</option><option value="price-asc">Lowest price</option><option value="price-desc">Highest price</option><option value="mileage-asc">Lowest mileage</option><option value="year-desc">Newest year</option></select>
         </div>
       </div>

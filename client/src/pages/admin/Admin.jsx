@@ -11,7 +11,7 @@ import { IMPORT_STATUSES, FUELS, TRANSMISSIONS, lkr, date } from '../../utils/fo
 
 const nav = [['', 'Dashboard'], ['vehicles', 'Vehicles'], ['categories', 'Categories'], ['auctions', 'Auction Listings'], ['imports', 'Import Requests'], ['customers', 'Customers'], ['inquiries', 'Inquiries'], ['quotations', 'Quotations'], ['tax', 'Tax Configuration'], ['content', 'Website Content'], ['reports', 'Reports']];
 const Load = ({ q, children }) => q.isLoading ? <Spinner /> : q.isError ? <ErrorState message={errMsg(q.error)} onRetry={q.refetch} /> : children(q.data);
-const Title = ({ children, action }) => <div className="mb-4 flex items-center justify-between"><h1 className="text-2xl font-extrabold">{children}</h1>{action}</div>;
+const Title = ({ children, action }) => <div className="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between"><h1 className="text-2xl font-extrabold">{children}</h1>{action}</div>;
 const Table = ({ cols, rows }) => <div className="card overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b bg-gray-50 text-xs uppercase text-gray-500"><tr>{cols.map((c) => <th key={c} className="px-3 py-2">{c}</th>)}</tr></thead><tbody>{rows.map((r, i) => <tr key={i} className="border-b last:border-0">{r.map((c, j) => <td key={j} className="px-3 py-2 align-top">{c}</td>)}</tr>)}</tbody></table>{!rows.length && <Empty title="No records" />}</div>;
 
 function Dashboard() {
@@ -133,11 +133,11 @@ function Reports() {
 
 export default function Admin() {
   const { user, logout } = useAuth(); const go = useNavigate();
-  return <div className="flex min-h-screen bg-gray-50">
+  return <div className="flex min-h-screen min-w-0 bg-gray-50">
     <aside className="hidden w-60 shrink-0 bg-brand p-4 text-gray-300 lg:block"><Link to="/"><img src={logo} alt="Cars@855" className="mb-6 h-12" /></Link>
       {nav.map(([to, l]) => <NavLink key={to} to={to} end={!to} className={({ isActive }) => `block rounded-lg px-3 py-2 text-sm ${isActive ? 'bg-gold text-white' : 'hover:bg-white/10'}`}>{l}</NavLink>)}</aside>
     <div className="min-w-0 flex-1">
-      <header className="flex items-center justify-between gap-3 border-b bg-white px-4 py-3"><select className="input w-auto lg:hidden" onChange={(e) => go(e.target.value ? `/admin/${e.target.value}` : '/admin')}>{nav.map(([to, l]) => <option key={to} value={to}>{l}</option>)}</select><span className="ml-auto text-sm">{user.name} · {user.role}</span><button className="text-sm text-gold" onClick={async () => { await logout(); go('/'); }}>Logout</button></header>
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-white px-4 py-3"><select className="input min-w-0 flex-1 lg:hidden" onChange={(e) => go(e.target.value ? `/admin/${e.target.value}` : '/admin')}>{nav.map(([to, l]) => <option key={to} value={to}>{l}</option>)}</select><span className="ml-auto truncate text-right text-sm">{user.name} · {user.role}</span><button className="shrink-0 text-sm text-gold" onClick={async () => { await logout(); go('/'); }}>Logout</button></header>
       <div className="p-4 sm:p-6"><Routes>
         <Route index element={<Dashboard />} /><Route path="vehicles" element={<Vehicles />} />
         <Route path="categories" element={<Simple title="Vehicle Categories" url="/categories" fields={[['name', 'Name'], ['description', 'Description']]} cols={['Name', 'Slug']} row={(c) => [c.name, c.slug]} />} />
