@@ -1,4 +1,4 @@
-import { NavLink, Routes, Route, Link } from 'react-router-dom';
+import { NavLink, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { forwardRef, useState } from 'react';
@@ -576,9 +576,12 @@ export default function Account() {
   useTitle('My Account');
   const { user } = useAuth();
   const unread = useUnread();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const activeTab = tabs.find(([to]) => to && location.pathname.endsWith(`/${to}`)) || tabs[0];
 
   return (
-    <div className="container-x grid gap-5 py-5 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:gap-6 sm:py-8 lg:grid-cols-[250px_1fr]">
+    <div className="container-x grid max-w-full gap-5 overflow-hidden py-5 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:gap-6 sm:py-8 lg:grid-cols-[250px_1fr]">
       <Toaster />
 
       <aside className="lg:sticky lg:top-24 lg:self-start">
@@ -590,6 +593,16 @@ export default function Account() {
               <p className="truncate text-xs text-gray-500">{user.email}</p>
             </div>
           </div>
+          <label className="block p-2 lg:hidden">
+            <span className="sr-only">Account section</span>
+            <select
+              className="input bg-gray-50 font-semibold"
+              value={activeTab[0]}
+              onChange={(event) => navigate(event.target.value ? `/account/${event.target.value}` : '/account')}
+            >
+              {tabs.map(([to, label]) => <option key={to} value={to}>{label}{to === 'notifications' && unread > 0 ? ` (${unread})` : ''}</option>)}
+            </select>
+          </label>
           <div className="hidden items-center gap-3 p-3 lg:flex">
             <span aria-hidden className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white">{initials(user.name)}</span>
             <div className="min-w-0">
@@ -597,7 +610,7 @@ export default function Account() {
               <p className="truncate text-xs text-gray-500">{user.email}</p>
             </div>
           </div>
-          <nav aria-label="Account" className="account-tabs flex snap-x gap-1 overflow-x-auto overscroll-x-contain pb-1 lg:flex-col lg:border-t lg:border-gray-100 lg:pb-0 lg:pt-2">
+          <nav aria-label="Account" className="account-tabs hidden snap-x gap-1 overflow-x-auto overscroll-x-contain pb-1 lg:flex lg:flex-col lg:border-t lg:border-gray-100 lg:pb-0 lg:pt-2">
             {tabs.map(([to, label, Icon]) => (
               <NavLink
                 key={to} to={to} end={!to}
