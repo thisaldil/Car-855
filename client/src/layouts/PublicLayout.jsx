@@ -5,7 +5,7 @@ import logo from '../assets/logo-dark.png';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { useSettings } from '../hooks/useSettings.js';
 
-const links = [['/vehicles', 'Vehicles'], ['/auctions', 'Japan Auctions'], ['/import', 'Import a Car'], ['/calculator', 'Cost Calculator'], ['/services', 'Services'], ['/about', 'About'], ['/contact', 'Contact']];
+const links = [['/vehicles', 'Vehicles'], ['/auctions', 'Japan Auctions'], ['/import', 'Import a Car'], ['/calculators/tax', 'Calculators'], ['/services', 'Services'], ['/about', 'About'], ['/contact', 'Contact']];
 
 export default function PublicLayout() {
   const [open, setOpen] = useState(false);
@@ -37,7 +37,7 @@ export default function PublicLayout() {
       <footer className="bg-brand text-gray-300">
         <div className="container-x grid gap-8 py-12 md:grid-cols-4">
           <div><img src={logo} alt="Cars@855" className="h-14" /><p className="mt-3 text-sm">Quality vehicles from Japan and Sri Lanka, with transparent import support.</p></div>
-          <div><h4 className="mb-3 font-bold text-white">Explore</h4>{[['/vehicles', 'Vehicle Stock'], ['/auctions', 'Auction Vehicles'], ['/calculator', 'Cost Calculator'], ['/faq', 'FAQ']].map(([t, l]) => <Link key={t} to={t} className="block py-1 text-sm hover:text-gold">{l}</Link>)}</div>
+          <div><h4 className="mb-3 font-bold text-white">Explore</h4>{[['/vehicles', 'Vehicle Stock'], ['/auctions', 'Auction Vehicles'], ['/calculators/tax', 'Calculators'], ['/faq', 'FAQ']].map(([t, l]) => <Link key={t} to={t} className="block py-1 text-sm hover:text-gold">{l}</Link>)}</div>
           <div><h4 className="mb-3 font-bold text-white">Company</h4>{[['/about', 'About Us'], ['/import-process', 'Import Process'], ['/financing', 'Financing'], ['/inspection', 'Vehicle Inspection'], ['/privacy', 'Privacy Policy'], ['/terms', 'Terms & Conditions']].map(([t, l]) => <Link key={t} to={t} className="block py-1 text-sm hover:text-gold">{l}</Link>)}</div>
           <div><h4 className="mb-3 font-bold text-white">Contact</h4>
             {s.phone && <a href={`tel:${s.phone}`} className="flex items-center gap-2 py-1 text-sm hover:text-gold"><Phone size={14} />{s.phone}</a>}
