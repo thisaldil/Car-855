@@ -55,10 +55,10 @@ const Section = ({ title, desc, action, children }) => (
   <section>
     <div className="mb-5 flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <h2 className="text-xl font-bold">{title}</h2>
-        {desc && <p className="mt-0.5 text-sm text-gray-500">{desc}</p>}
+        <h2 className="break-words text-xl font-bold sm:text-2xl">{title}</h2>
+        {desc && <p className="mt-1 max-w-2xl text-sm leading-5 text-gray-500">{desc}</p>}
       </div>
-      {action && <div className="w-full sm:w-auto">{action}</div>}
+      {action && <div className="w-full shrink-0 sm:w-auto">{action}</div>}
     </div>
     {children}
   </section>
@@ -80,7 +80,7 @@ export function Tracker({ status, history = [] }) {
         const current = i === idx;
         const h = history.find((x) => x.status === s);
         return (
-          <li key={s} aria-current={current ? 'step' : undefined} className="relative flex flex-1 gap-3 pb-5 last:pb-0 lg:flex-col lg:gap-2 lg:pb-0 lg:pr-2">
+          <li key={s} aria-current={current ? 'step' : undefined} className="relative flex min-w-0 flex-1 gap-3 pb-5 last:pb-0 lg:flex-col lg:gap-2 lg:pb-0 lg:pr-2">
             {i < steps.length - 1 && (
               <span
                 aria-hidden
@@ -95,7 +95,7 @@ export function Tracker({ status, history = [] }) {
               {done ? <Check size={14} aria-hidden /> : i + 1}
             </span>
             <span className="min-w-0">
-              <span className={`block text-xs leading-tight ${current ? 'font-bold text-gray-900' : done ? 'font-medium text-gray-700' : 'text-gray-400'}`}>{s}</span>
+            <span className={`block break-words text-xs leading-tight ${current ? 'font-bold text-gray-900' : done ? 'font-medium text-gray-700' : 'text-gray-400'}`}>{s}</span>
               {h?.at && <span className="mt-0.5 block text-[11px] text-gray-500">{date(h.at)}</span>}
             </span>
           </li>
@@ -211,15 +211,15 @@ function Imports() {
                       <Tracker status={r.status} history={r.progressHistory} />
 
                       {r.status !== 'Cancelled' && (
-                        <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4 text-sm">
-                          <label className={`btn-ghost inline-flex cursor-pointer items-center gap-2 ${uploading ? 'pointer-events-none opacity-60' : ''}`}>
+                        <div className="mt-5 flex flex-col items-stretch gap-3 border-t border-gray-100 pt-4 text-sm sm:flex-row sm:flex-wrap sm:items-center">
+                          <label className={`btn-ghost inline-flex w-full cursor-pointer items-center gap-2 sm:w-auto ${uploading ? 'pointer-events-none opacity-60' : ''}`}>
                             {uploading ? <Loader2 size={14} className="animate-spin" aria-hidden /> : <Upload size={14} aria-hidden />}
                             {uploading ? 'Uploading…' : 'Upload document'}
                             <input type="file" hidden disabled={uploading} accept=".pdf,.jpg,.jpeg,.png,.webp" onChange={(e) => onFile(r._id, e)} />
                           </label>
                           <span className="text-xs text-gray-400">PDF or image, up to {MAX_UPLOAD_MB} MB</span>
                           {cancellable && (
-                            <button className="font-medium text-red-600 hover:underline sm:ml-auto" onClick={() => setCancelId(r._id)}>Cancel request</button>
+                            <button className="text-left font-medium text-red-600 hover:underline sm:ml-auto" onClick={() => setCancelId(r._id)}>Cancel request</button>
                           )}
                         </div>
                       )}
@@ -351,10 +351,10 @@ function Quotations() {
                   const open = x.status === 'sent' && !expired;
                   const lines = [['Vehicle', x.vehiclePrice], ['Shipping', x.shippingCost], ['Taxes', x.taxes], ['Other charges', x.otherCharges]];
                   return (
-                    <article key={x._id} className="card p-5">
+                    <article key={x._id} className="card p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <h3 className="font-bold">{x.quoteNo}</h3>
+                          <h3 className="break-words font-bold">{x.quoteNo}</h3>
                           <p className="break-words text-sm text-gray-500">{x.vehicle?.title}</p>
                         </div>
                         <Badge tone={x.status === 'sent' && expired ? 'red' : statusTone(x.status)} dot>
@@ -578,11 +578,18 @@ export default function Account() {
   const unread = useUnread();
 
   return (
-    <div className="container-x grid gap-6 py-8 lg:grid-cols-[250px_1fr]">
+    <div className="container-x grid gap-5 py-5 pb-[calc(2rem+env(safe-area-inset-bottom))] sm:gap-6 sm:py-8 lg:grid-cols-[250px_1fr]">
       <Toaster />
 
       <aside className="lg:sticky lg:top-24 lg:self-start">
         <div className="card p-2">
+          <div className="flex min-w-0 items-center gap-3 p-3 lg:hidden">
+            <span aria-hidden className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white">{initials(user.name)}</span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{user.name}</p>
+              <p className="truncate text-xs text-gray-500">{user.email}</p>
+            </div>
+          </div>
           <div className="hidden items-center gap-3 p-3 lg:flex">
             <span aria-hidden className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white">{initials(user.name)}</span>
             <div className="min-w-0">
@@ -590,11 +597,11 @@ export default function Account() {
               <p className="truncate text-xs text-gray-500">{user.email}</p>
             </div>
           </div>
-          <nav aria-label="Account" className="flex gap-1 overflow-x-auto pb-1 lg:flex-col lg:border-t lg:border-gray-100 lg:pb-0 lg:pt-2">
+          <nav aria-label="Account" className="account-tabs flex snap-x gap-1 overflow-x-auto overscroll-x-contain pb-1 lg:flex-col lg:border-t lg:border-gray-100 lg:pb-0 lg:pt-2">
             {tabs.map(([to, label, Icon]) => (
               <NavLink
                 key={to} to={to} end={!to}
-                className={({ isActive }) => `flex items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium ${isActive ? 'bg-brand text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                className={({ isActive }) => `flex shrink-0 snap-start items-center gap-2.5 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-medium ${isActive ? 'bg-brand text-white' : 'text-gray-700 hover:bg-gray-100'}`}
               >
                 <Icon size={16} aria-hidden />
                 <span>{label}</span>

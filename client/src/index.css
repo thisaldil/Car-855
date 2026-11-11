@@ -3,6 +3,7 @@
   html { @apply overflow-x-hidden; }
   body { @apply min-w-0 overflow-x-hidden bg-white text-brand antialiased; }
   button, a, input, select, textarea { @apply max-w-full; }
+  input, select, textarea { font-size: 16px; }
 }
 @layer components {
   .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition disabled:opacity-60 min-h-[44px]; }
@@ -14,6 +15,10 @@
   .card { @apply rounded-2xl bg-white shadow-card border border-gray-100; }
   .container-x { @apply mx-auto w-full max-w-7xl min-w-0 px-4 sm:px-6 lg:px-8; }
   .h-section { @apply text-2xl sm:text-3xl font-extrabold tracking-tight; }
+}
+@media (max-width: 639px) {
+  .account-tabs { scrollbar-width: none; }
+  .account-tabs::-webkit-scrollbar { display: none; }
 }
 @media print {
   .no-print, header, footer, [aria-label="WhatsApp"] { display: none !important; }
