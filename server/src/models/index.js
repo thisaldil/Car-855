@@ -128,6 +128,19 @@ const inquirySchema = new Schema({
 }, { timestamps: true });
 export const Inquiry = model('Inquiry', inquirySchema);
 
+
+const importDocumentSchema = new Schema({
+  name: { type: String, required: true },
+  type: { type: String, default: 'other' },
+  publicId: { type: String, required: true },
+  uploadedBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  at: { type: Date, default: Date.now },
+});
+
+
 /* ---------- Import request ---------- */
 const importSchema = new Schema({
   requestNo: { type: String, unique: true },
@@ -143,8 +156,10 @@ const importSchema = new Schema({
   status: { type: String, enum: IMPORT_STATUSES, default: 'Submitted', index: true },
   assignedStaff: ref('User'),
   progressHistory: [{ status: String, note: String, changedBy: ref('User'), at: { type: Date, default: Date.now } }],
-  documents: [{ name: String, type: String, publicId: String, uploadedBy: ref('User'), at: { type: Date, default: Date.now } }], // private
-}, { timestamps: true });
+documents: {
+  type: [importDocumentSchema],
+  default: [],
+},}, { timestamps: true });
 importSchema.pre('validate', function (next) {
   if (!this.requestNo) this.requestNo = `IMP-${Date.now().toString(36).toUpperCase()}${crypto.randomBytes(1).toString('hex').toUpperCase()}`;
   next();
