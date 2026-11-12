@@ -107,7 +107,10 @@ uploads.post('/import-documents/:id', docUpload.single('file'), asyncHandler(asy
     folder: 'import-docs',
     privateFile: true,
   });
-
+console.log(
+  'IMPORT DOCUMENTS SCHEMA:',
+  ImportRequest.schema.path('documents')?.instance
+);
   try {
     d.documents.push({
       name: req.file.originalname.slice(0, 120),
