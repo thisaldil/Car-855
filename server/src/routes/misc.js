@@ -91,6 +91,9 @@ uploads.post('/vehicle-documents/:vehicleId', can('vehicles'), docUpload.single(
   ok(res, await VehicleDocument.create({ vehicle: req.params.vehicleId, documentType: req.body.documentType || 'other', publicId: o.publicId, uploadedBy: req.user._id }), {}, 201);
 }));
 uploads.post('/import-documents/:id', docUpload.single('file'), asyncHandler(async (req, res) => {
+  console.log('IMPORT DOCUMENTS SCHEMA:',
+  ImportRequest.schema.path('documents')?.instance
+);
   const d = await ImportRequest.findById(req.params.id);
 
   const staff = ['admin', 'staff'].includes(req.user.role);
