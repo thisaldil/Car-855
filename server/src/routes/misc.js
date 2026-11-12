@@ -5,8 +5,13 @@ import { protect, can, restrictTo } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { AppError, asyncHandler, ok, paginate, pageMeta } from '../utils/helpers.js';
 import { estimate } from '../services/calculator.js';
-import { imageUpload, docUpload, uploadBuffer, signedUrl } from '../services/upload.js';
-
+import {
+  imageUpload,
+  docUpload,
+  uploadBuffer,
+  signedUrl,
+  destroy
+} from '../services/upload.js';
 const oid = z.string().regex(/^[a-f\d]{24}$/i);
 
 /* Favorites */
@@ -87,26 +92,46 @@ uploads.post('/vehicle-documents/:vehicleId', can('vehicles'), docUpload.single(
 }));
 uploads.post('/import-documents/:id', docUpload.single('file'), asyncHandler(async (req, res) => {
   const d = await ImportRequest.findById(req.params.id);
-  const staff = ['admin', 'staff'].includes(req.user.role);
-  if (!d || (!staff && String(d.customer) !== String(req.user._id))) throw new AppError('Import request not found', 404);
-  if (!req.file) throw new AppError('No file uploaded', 422);
 
-  let o;
-  try {
-    o = await uploadBuffer(req.file, { folder: 'import-docs', privateFile: true });
-  } catch (e) {
-    console.error('CLOUDINARY ERROR:', e);
-    throw new AppError(`Storage error: ${e.message}`, 502);
+  const staff = ['admin', 'staff'].includes(req.user.role);
+
+  if (!d || (!staff && String(d.customer) !== String(req.user._id))) {
+    throw new AppError('Import request not found', 404);
   }
 
+  if (!req.file) {
+    throw new AppError('No file uploaded', 422);
+  }
+
+  const o = await uploadBuffer(req.file, {
+    folder: 'import-docs',
+    privateFile: true,
+  });
+
   try {
-    d.documents.push({ name: req.file.originalname.slice(0, 120), type: req.body.type || 'other', publicId: o.publicId, uploadedBy: req.user._id });
+    d.documents.push({
+      name: req.file.originalname.slice(0, 120),
+      type: req.body.type || 'other',
+      publicId: o.publicId,
+      uploadedBy: req.user._id,
+    });
+
     await d.save();
   } catch (e) {
-    console.error('SAVE ERROR:', e.message);
-    await destroy(o.publicId, { type: 'private' }); // don't leave an orphan in Cloudinary
+    console.error('DOCUMENT SAVE ERROR:', e);
+
+    try {
+      await destroy(o.publicId, {
+        type: 'private',
+        resourceType: o.resourceType,
+      });
+    } catch (cleanupError) {
+      console.error('CLOUDINARY CLEANUP ERROR:', cleanupError);
+    }
+
     throw e;
   }
+
   ok(res, { name: req.file.originalname }, {}, 201);
 }));
 // Short-lived signed link; only the owning customer or staff
