@@ -103,14 +103,15 @@ uploads.post('/import-documents/:id', docUpload.single('file'), asyncHandler(asy
     throw new AppError('No file uploaded', 422);
   }
 
-  const o = await uploadBuffer(req.file, {
-    folder: 'import-docs',
-    privateFile: true,
-  });
 console.log(
   'IMPORT DOCUMENTS SCHEMA:',
   ImportRequest.schema.path('documents')?.instance
 );
+
+const o = await uploadBuffer(req.file, {
+  folder: 'import-docs',
+  privateFile: true,
+});
   try {
     d.documents.push({
       name: req.file.originalname.slice(0, 120),
