@@ -149,7 +149,8 @@ importSchema.pre('validate', function (next) {
   if (!this.requestNo) this.requestNo = `IMP-${Date.now().toString(36).toUpperCase()}${crypto.randomBytes(1).toString('hex').toUpperCase()}`;
   next();
 });
-export const ImportRequest = model('ImportRequest', importSchema);
+export const ImportRequest =
+  mongoose.models.ImportRequest || model('ImportRequest', importSchema);
 
 /* ---------- Quotation ---------- */
 const quotationSchema = new Schema({
