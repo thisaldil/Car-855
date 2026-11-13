@@ -2,9 +2,10 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import { User, Category, SiteSetting, Faq } from '../models/index.js';
 import { assertEnv, env } from '../config/env.js';
+import { connectDB } from '../config/db.js';
 
 assertEnv();
-await mongoose.connect(env.mongoUri);
+await connectDB();
 const { ADMIN_NAME = 'Site Admin', ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
 if (!ADMIN_EMAIL || !ADMIN_PASSWORD) throw new Error('Set ADMIN_EMAIL and ADMIN_PASSWORD in .env before seeding');
 if (!(await User.exists({ email: ADMIN_EMAIL.toLowerCase() }))) {
