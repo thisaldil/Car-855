@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { Favorite, Vehicle, TaxConfiguration, Notification, User, Inquiry, ImportRequest, Quotation, VehicleDocument } from '../models/index.js';
+import { Favorite, Vehicle, TaxConfiguration, Notification, User, Inquiry, ImportRequest, Quotation, VehicleDocument, GalleryItem } from '../models/index.js';
 import { protect, can, restrictTo } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 import { AppError, asyncHandler, ok, paginate, pageMeta } from '../utils/helpers.js';
 import { estimate } from '../services/calculator.js';
 import {
   imageUpload,
+  mediaUpload,
   docUpload,
   uploadBuffer,
   signedUrl,
@@ -83,6 +84,22 @@ uploads.post('/vehicle-images', can('vehicles'), imageUpload.array('images', 10)
   const out = await Promise.all(req.files.map((f) => uploadBuffer(f, { folder: 'vehicles' })));
   ok(res, out.map((o) => ({ url: o.url, publicId: o.publicId })), {}, 201);
 }));
+uploads.post('/gallery-media', can('content'), mediaUpload.array('media', 30), asyncHandler(async (req, res) => {
+  if (!req.files?.length) throw new AppError('No files uploaded', 422);
+  const start = await GalleryItem.countDocuments();
+  const out = await Promise.all(req.files.map(async (file, index) => {
+    const uploaded = await uploadBuffer(file, { folder: 'gallery' });
+    const type = uploaded.resourceType === 'video' ? 'video' : 'image';
+    return GalleryItem.create({
+      type,
+      resourceType: uploaded.resourceType,
+      url: uploaded.url,
+      publicId: uploaded.publicId,
+      order: start + index,
+    });
+  }));
+  ok(res, out, {}, 201);
+}));
 uploads.post('/vehicle-documents/:vehicleId', can('vehicles'), docUpload.single('file'), asyncHandler(async (req, res) => {
   console.log('BODY:', req.body);
   console.log('FILE:', req.file && { name: req.file.originalname, mime: req.file.mimetype });
@@ -156,6 +173,29 @@ uploads.get('/import-documents/:id/:docId', asyncHandler(async (req, res) => {
   const doc = d.documents.id(req.params.docId);
   if (!doc) throw new AppError('Document not found', 404);
   ok(res, { url: signedUrl(doc.publicId, req.query.format || 'pdf'), expiresInSeconds: 300 });
+}));
+
+/* Public media gallery */
+export const gallery = Router();
+gallery.get('/', asyncHandler(async (_req, res) => {
+  ok(res, await GalleryItem.find({ published: true }).sort({ order: 1, createdAt: 1 }).lean());
+}));
+gallery.get('/all', protect, can('content'), asyncHandler(async (_req, res) => {
+  ok(res, await GalleryItem.find().sort({ order: 1, createdAt: 1 }).lean());
+}));
+gallery.put('/:id', protect, can('content'), asyncHandler(async (req, res) => {
+  const allowed = ['caption', 'order', 'published'];
+  const data = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)));
+  if (data.order !== undefined) data.order = Number(data.order);
+  const item = await GalleryItem.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
+  if (!item) throw new AppError('Gallery item not found', 404);
+  ok(res, item);
+}));
+gallery.delete('/:id', protect, can('content'), asyncHandler(async (req, res) => {
+  const item = await GalleryItem.findByIdAndDelete(req.params.id);
+  if (!item) throw new AppError('Gallery item not found', 404);
+  await destroy(item.publicId, { resourceType: item.resourceType });
+  ok(res, null);
 }));
 
 /* Admin */

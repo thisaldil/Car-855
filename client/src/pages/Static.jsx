@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowRight, BadgeCheck, CarFront, CheckCircle2, ClipboardCheck, Compass, FileCheck2, Handshake, Instagram, MapPin, Phone, Search, ShieldCheck, Ship, Sparkles, Wrench } from 'lucide-react';
+import { ArrowRight, BadgeCheck, CarFront, CheckCircle2, ClipboardCheck, Compass, FileCheck2, Handshake, Instagram, MapPin, Phone, Play, Search, ShieldCheck, Ship, Sparkles, Wrench } from 'lucide-react';
 import { get, api, errMsg } from '../services/api.js';
 import { useTitle, useSettings } from '../hooks/useSettings.js';
 import { useForm } from 'react-hook-form';
@@ -53,6 +53,25 @@ function ContactDetails() {
   </div>;
 }
 
+function Gallery() {
+  const q = useQuery({ queryKey: ['gallery'], queryFn: () => get('/gallery').then((r) => r.data) });
+  if (q.isLoading || q.isError || !q.data?.length) return null;
+  return <section className="container-x py-14 sm:py-20">
+    <div className="flex items-end justify-between gap-4">
+      <div><p className="text-sm font-bold uppercase tracking-widest text-gold">Cars@855 moments</p><h2 className="mt-2 text-3xl font-extrabold">See us in motion.</h2><p className="mt-3 max-w-xl text-sm leading-6 text-gray-500">A glimpse of the vehicles, people and moments behind every journey.</p></div>
+      <a href={instagram} target="_blank" rel="noreferrer" className="hidden items-center gap-2 text-sm font-bold text-gold sm:flex"><Instagram size={17} /> Instagram</a>
+    </div>
+    <div className="mt-8 columns-2 gap-3 sm:columns-3 lg:columns-4">
+      {q.data.map((item) => <a key={item._id} href={item.url} target="_blank" rel="noreferrer" className="group relative mb-3 block overflow-hidden rounded-2xl bg-gray-100 break-inside-avoid">
+        {item.type === 'video' ? <video src={item.url} muted loop autoPlay playsInline className="w-full object-cover transition duration-500 group-hover:scale-105" /> : <img src={item.url} alt={item.caption || 'Cars@855 gallery'} loading="lazy" className="w-full object-cover transition duration-500 group-hover:scale-105" />}
+        {item.type === 'video' && <span className="absolute left-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white"><Play size={14} fill="currentColor" /></span>}
+        {item.caption && <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 pb-3 pt-8 text-xs font-medium text-white">{item.caption}</span>}
+      </a>)}
+    </div>
+    <a href={instagram} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-gold sm:hidden"><Instagram size={17} /> Follow us on Instagram</a>
+  </section>;
+}
+
 function ServicesPage() {
   return <>
     <PageHero eyebrow="What we do" title="A smoother way to find and import your next vehicle." copy="From the first search to the final handover, Cars@855 brings vehicle sourcing, import coordination and practical guidance together in one trusted experience." icon={Wrench} />
@@ -68,6 +87,7 @@ function ServicesPage() {
 function AboutPage() {
   return <>
     <PageHero eyebrow="Since 1985" title="Your dream vehicle. Our expertise." copy="Cars@855 is a trusted vehicle import and sales partner based at No. 855, Negombo. We combine experience, practical guidance and a customer-first process to make every purchase feel more confident." icon={BadgeCheck} />
+    <Gallery />
     <section className="container-x grid gap-10 py-14 lg:grid-cols-[1.1fr_.9fr] lg:items-center sm:py-20"><div><p className="text-sm font-bold uppercase tracking-widest text-gold">Who we are</p><h2 className="mt-2 text-3xl font-extrabold">Quality, trust and experience in every conversation.</h2><p className="mt-5 leading-7 text-gray-600">For more than four decades, we have helped customers navigate vehicle choices with a straightforward approach: listen carefully, explain clearly and support the journey from the first enquiry to delivery.</p><p className="mt-4 leading-7 text-gray-600">Our goal is not simply to find a car. It is to help you choose the right vehicle for your needs, budget and confidence.</p><div className="mt-7 grid gap-3 sm:grid-cols-2">{['Customer-first guidance', 'Transparent next steps', 'Japan and local vehicle options', 'Support through the process'].map((item) => <div key={item} className="flex items-center gap-2 text-sm font-semibold"><CheckCircle2 size={18} className="text-gold" />{item}</div>)}</div></div><div className="rounded-3xl bg-brand p-8 text-white shadow-xl sm:p-10"><Sparkles className="text-gold" size={30} /><p className="mt-6 text-2xl font-extrabold leading-tight">Trusted Vehicle Imports Since 1985</p><p className="mt-4 text-sm leading-6 text-gray-300">Based in Negombo, serving customers who value a dependable vehicle journey.</p><div className="mt-8 flex items-center gap-2 text-sm text-gray-300"><MapPin size={17} className="text-gold" />No. 855, Negombo</div></div></section>
     <section className="bg-gray-50"><div className="container-x py-14 text-center sm:py-16"><p className="text-sm font-bold uppercase tracking-widest text-gold">Let&apos;s connect</p><h2 className="mt-2 text-3xl font-extrabold">Good vehicles start with a good conversation.</h2><p className="mx-auto mt-3 max-w-xl text-gray-600">Tell us what you are looking for and our team will help you take the next step.</p><Link to="/contact" className="btn-gold mt-6">Contact Cars@855 <ArrowRight size={16} /></Link></div></section>
   </>;

@@ -250,3 +250,14 @@ export const SiteSetting = model('SiteSetting', new Schema({
   phone: String, whatsapp: String, email: String, address: String, // admin-managed, never invented
   socialLinks: { facebook: String, instagram: String, tiktok: String },
 }, { timestamps: true }));
+
+/* ---------- Public media gallery ---------- */
+export const GalleryItem = model('GalleryItem', new Schema({
+  type: { type: String, enum: ['image', 'video'], required: true },
+  url: { type: String, required: true },
+  publicId: { type: String, required: true },
+  resourceType: { type: String, enum: ['image', 'video'], default: 'image' },
+  caption: { type: String, maxlength: 200, default: '' },
+  order: { type: Number, default: 0, index: true },
+  published: { type: Boolean, default: true, index: true },
+}, { timestamps: true }));

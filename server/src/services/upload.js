@@ -8,6 +8,7 @@ import { AppError } from '../utils/helpers.js';
 cloudinary.config(env.cloudinary);
 
 const IMAGE = ['image/jpeg', 'image/png', 'image/webp'];
+const MEDIA = [...IMAGE, 'video/mp4', 'video/webm', 'video/quicktime'];
 const DOC = [...IMAGE, 'application/pdf'];
 
 const make = (allowed, maxMB) => multer({
@@ -21,6 +22,7 @@ const make = (allowed, maxMB) => multer({
 });
 
 export const imageUpload = make(IMAGE, 8);
+export const mediaUpload = make(MEDIA, 50);
 export const docUpload = make(DOC, 10);
 
 /**

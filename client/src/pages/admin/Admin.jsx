@@ -1,6 +1,7 @@
 import { NavLink, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, useFieldArray } from 'react-hook-form';
+import { GripVertical, ImagePlus, Play } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState } from 'react';
 import logo from '../../assets/logo-dark.png';
@@ -9,7 +10,7 @@ import { useAuth } from '../../contexts/AuthContext.jsx';
 import { Spinner, ErrorState, Empty, Badge, Field, Pager } from '../../components/ui.jsx';
 import { IMPORT_STATUSES, FUELS, TRANSMISSIONS, lkr, date } from '../../utils/format.js';
 
-const nav = [['', 'Dashboard'], ['vehicles', 'Vehicles'], ['categories', 'Categories'], ['auctions', 'Auction Listings'], ['imports', 'Import Requests'], ['customers', 'Customers'], ['inquiries', 'Inquiries'], ['quotations', 'Quotations'], ['tax', 'Tax Configuration'], ['content', 'Website Content'], ['reports', 'Reports']];
+const nav = [['', 'Dashboard'], ['vehicles', 'Vehicles'], ['categories', 'Categories'], ['auctions', 'Auction Listings'], ['imports', 'Import Requests'], ['customers', 'Customers'], ['inquiries', 'Inquiries'], ['quotations', 'Quotations'], ['tax', 'Tax Configuration'], ['gallery', 'Media Gallery'], ['content', 'Website Content'], ['reports', 'Reports']];
 const Load = ({ q, children }) => q.isLoading ? <Spinner /> : q.isError ? <ErrorState message={errMsg(q.error)} onRetry={q.refetch} /> : children(q.data);
 const Title = ({ children, action }) => <div className="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between"><h1 className="text-2xl font-extrabold">{children}</h1>{action}</div>;
 const Table = ({ cols, rows }) => <div className="card overflow-x-auto"><table className="w-full text-left text-sm"><thead className="border-b bg-gray-50 text-xs uppercase text-gray-500"><tr>{cols.map((c) => <th key={c} className="px-3 py-2">{c}</th>)}</tr></thead><tbody>{rows.map((r, i) => <tr key={i} className="border-b last:border-0">{r.map((c, j) => <td key={j} className="px-3 py-2 align-top">{c}</td>)}</tr>)}</tbody></table>{!rows.length && <Empty title="No records" />}</div>;
@@ -101,6 +102,55 @@ function Quotations() {
       <Field label="Other charges"><input type="number" className="input" {...register('otherCharges')} /></Field><Field label="Valid (days)"><input type="number" className="input" {...register('validityPeriod')} /></Field><Field label="Import request ID (optional)"><input className="input" {...register('importRequest')} /></Field><button className="btn-gold self-end">Create draft</button></form>
     <Load q={q}>{(d) => <Table cols={['No.', 'Customer', 'Total', 'Status', '']} rows={d.data.map((x) => [x.quoteNo, x.customer?.name, lkr(x.totalPrice), x.status, x.status === 'draft' ? <button className="text-gold" onClick={() => send(x._id)}>Send to customer</button> : ''])} />}</Load></>;
 }
+
+function Gallery() {
+  const qc = useQueryClient();
+  const q = useQuery({ queryKey: ['a-gallery'], queryFn: () => get('/gallery/all').then((r) => r.data) });
+  const [files, setFiles] = useState([]);
+  const [items, setItems] = useState([]);
+  const [dragged, setDragged] = useState(null);
+  const upload = useMutation({
+    mutationFn: async () => {
+      if (!files.length) throw new Error('Choose at least one image or video');
+      const form = new FormData();
+      files.forEach((file) => form.append('media', file));
+      return api.post('/uploads/gallery-media', form);
+    },
+    onSuccess: () => { setFiles([]); qc.invalidateQueries({ queryKey: ['a-gallery'] }); },
+    onError: (e) => alert(errMsg(e)),
+  });
+  const reorder = async (from, to) => {
+    const next = [...(items.length ? items : q.data)];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setItems(next);
+    try { await Promise.all(next.map((item, index) => api.put(`/gallery/${item._id}`, { order: index }))); qc.invalidateQueries({ queryKey: ['a-gallery'] }); }
+    catch (e) { alert(errMsg(e)); setItems([]); }
+  };
+  const update = async (item, data) => {
+    try { await api.put(`/gallery/${item._id}`, data); qc.invalidateQueries({ queryKey: ['a-gallery'] }); }
+    catch (e) { alert(errMsg(e)); }
+  };
+  const remove = async (id) => {
+    if (confirm('Delete this gallery item?')) { try { await api.delete(`/gallery/${id}`); qc.invalidateQueries({ queryKey: ['a-gallery'] }); } catch (e) { alert(errMsg(e)); } }
+  };
+  const rows = items.length ? items : q.data || [];
+  return <><Title>Media Gallery</Title>
+    <form onSubmit={(e) => { e.preventDefault(); upload.mutate(); }} className="card mb-6 border-2 border-dashed p-6 text-center" onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); setFiles((current) => [...current, ...e.dataTransfer.files].filter((f) => f.type.startsWith('image/') || f.type.startsWith('video/'))); }}>
+      <ImagePlus className="mx-auto text-gold" size={30} /><p className="mt-2 font-semibold">Drop images and videos here</p><p className="mt-1 text-xs text-gray-500">JPG, PNG, WebP, MP4, WebM or MOV · 50MB max per file</p>
+      <input className="mx-auto mt-4 block max-w-full text-sm" type="file" accept="image/*,video/*" multiple onChange={(e) => setFiles([...e.target.files])} />
+      {files.length > 0 && <p className="mt-3 text-sm text-gray-600">{files.length} file(s) ready to upload</p>}
+      <button className="btn-gold mt-4" disabled={upload.isPending}>{upload.isPending ? 'Uploading…' : 'Upload media'}</button>
+    </form>
+    <Load q={q}>{() => <div className="space-y-3">{rows.map((item, index) => <div key={item._id} draggable onDragStart={() => setDragged(index)} onDragOver={(e) => e.preventDefault()} onDrop={() => { if (dragged !== null && dragged !== index) reorder(dragged, index); setDragged(null); }} className="card flex flex-col gap-3 p-3 sm:flex-row sm:items-center">
+      <GripVertical className="hidden shrink-0 cursor-grab text-gray-400 sm:block" size={20} />
+      <div className="h-28 w-full shrink-0 overflow-hidden rounded-xl bg-gray-100 sm:w-40">{item.type === 'video' ? <video src={item.url} muted controls className="h-full w-full object-cover" /> : <img src={item.url} alt="" className="h-full w-full object-cover" />}</div>
+      <div className="flex-1"><p className="text-xs font-bold uppercase tracking-wider text-gray-400">{item.type}{item.type === 'video' && <Play className="ml-1 inline" size={11} />}</p><input className="input mt-2" defaultValue={item.caption} placeholder="Optional caption" onBlur={(e) => e.target.value !== item.caption && update(item, { caption: e.target.value })} /></div>
+      <label className="flex items-center gap-2 text-sm"><input type="checkbox" defaultChecked={item.published} onChange={(e) => update(item, { published: e.target.checked })} /> Published</label>
+      <button type="button" className="text-sm text-red-600" onClick={() => remove(item._id)}>Delete</button>
+    </div>)}</div>}</Load>
+  </>;
+}
 function Tax() {
   const qc = useQueryClient(); const q = useQuery({ queryKey: ['a-tax'], queryFn: () => get('/tax-configurations').then((r) => r.data) });
   const { register, control, handleSubmit, reset } = useForm({ defaultValues: { vehicleCategory: 'any', fuelType: 'any', min: 0, max: 100000, rules: [{ name: '', type: 'percent', base: 'cif', value: '' }] } });
@@ -142,6 +192,6 @@ export default function Admin() {
         <Route index element={<Dashboard />} /><Route path="vehicles" element={<Vehicles />} />
         <Route path="categories" element={<Simple title="Vehicle Categories" url="/categories" fields={[['name', 'Name'], ['description', 'Description']]} cols={['Name', 'Slug']} row={(c) => [c.name, c.slug]} />} />
         <Route path="auctions" element={<Simple title="Auction Listings" url="/auctions" fields={[['make', 'Make'], ['model', 'Model'], ['manufacturingYear', 'Year', 'number'], ['auctionGrade', 'Grade'], ['mileage', 'Mileage', 'number'], ['engineCapacity', 'Engine cc', 'number'], ['auctionHouse', 'Auction house'], ['auctionDate', 'Auction date', 'date'], ['startingBid', 'Starting bid', 'number'], ['currency', 'Currency (JPY)'], ['estimatedLandedCost', 'Est. landed cost (LKR)', 'number']]} cols={['Vehicle', 'Grade', 'Auction', 'Bid']} row={(a) => [`${a.make} ${a.model} ${a.manufacturingYear || ''}`, a.auctionGrade, `${a.auctionHouse || ''} ${date(a.auctionDate)}`, `${a.currency} ${a.startingBid ?? ''}`]} />} />
-        <Route path="imports" element={<Imports />} /><Route path="customers" element={<Customers />} /><Route path="inquiries" element={<Inquiries />} /><Route path="quotations" element={<Quotations />} /><Route path="tax" element={<Tax />} /><Route path="content" element={<Content />} /><Route path="reports" element={<Reports />} />
+        <Route path="imports" element={<Imports />} /><Route path="customers" element={<Customers />} /><Route path="inquiries" element={<Inquiries />} /><Route path="quotations" element={<Quotations />} /><Route path="tax" element={<Tax />} /><Route path="gallery" element={<Gallery />} /><Route path="content" element={<Content />} /><Route path="reports" element={<Reports />} />
       </Routes></div></div></div>;
 }

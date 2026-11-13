@@ -25,7 +25,7 @@ If the server reports `ECONNREFUSED 127.0.0.1:27017`, MongoDB is not running at 
 ```bash
 npm run seed
 ```
-Creates the admin user, vehicle categories, default hero text and sample FAQs. Log in at `/login`; admins land on `/admin`. Create staff users via `POST /api/admin/staff` (permissions: vehicles, imports, inquiries, quotations, content, tax, customers, reports).
+Creates the admin user, vehicle categories, default hero text and sample FAQs. Log in at `/login`; admins land on `/admin`. Create staff users via `POST /api/admin/staff` (permissions: vehicles, imports, inquiries, quotations, content, tax, customers, reports). Users with the `content` permission can manage the mixed image/video gallery from **Admin → Media Gallery**.
 
 ### Tax configuration (required before the calculator works)
 No duty or tax rates are built in. In **Admin → Tax Configuration** enter the rules published by the relevant authority (percent / fixed / per-cc, based on CIF or running total), the category, fuel type, engine range and effective date. Edits keep a history; "delete" deactivates. Until a matching active configuration exists the calculator replies that no estimate is available.
@@ -51,7 +51,7 @@ Production: `npm run build` (outputs `client/dist`), then `NODE_ENV=production n
 | Quotations | `GET/POST/PUT /quotations`, `PATCH /:id/status` (customers: accept/decline own, non-draft) |
 | Favorites | `GET/POST /favorites`, `DELETE /favorites/:vehicleId` |
 | Tax | `GET/POST/PUT/DELETE /tax-configurations`; `POST /calculator/estimate` |
-| Other | `/notifications`, `/uploads/*`, `/admin/dashboard, /customers, /staff, /reports?type=&format=csv` |
+| Other | `/notifications`, `/gallery`, `/uploads/*`, `/admin/dashboard, /customers, /staff, /reports?type=&format=csv` |
 
 ## Security notes
 Helmet, CORS allow-list, rate limits (stricter on auth), zod validation with field whitelisting, Mongo-operator stripping, bcrypt (via `bcryptjs`, same algorithm, no native build), HTTP-only JWT cookie, ownership checks on every customer resource, private Cloudinary uploads served through 5-minute signed URLs, CSV-injection guard on exports, password/token fields never serialised.

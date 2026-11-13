@@ -13,7 +13,7 @@ import inquiries from './routes/inquiries.js';
 import imports from './routes/imports.js';
 import quotations from './routes/quotations.js';
 import { categories, auctions, testimonials, faqs, settings } from './routes/crud.js';
-import { favorites, tax, calculator, notifications, uploads, admin } from './routes/misc.js';
+import { favorites, tax, calculator, notifications, uploads, gallery, admin } from './routes/misc.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -57,6 +57,7 @@ app.use('/api/tax-configurations', tax);
 app.use('/api/calculator', calculator);
 app.use('/api/notifications', notifications);
 app.use('/api/uploads', uploads);
+app.use('/api/gallery', gallery);
 app.use('/api/admin', admin);
 app.use(notFound);
 app.use(errorHandler);
